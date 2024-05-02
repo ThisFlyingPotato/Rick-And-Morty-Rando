@@ -1,0 +1,78 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rand-O-Mizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="/public/ressources/img/RickIcon.png" />
+    <script src="/public/script.js" defer></script>
+</head>
+
+<body class="relative">
+    <background class="absolute -z-50 w-full h-full top-0 left-0 bg-[url('./ressources/img/Space_Cats_Wallpaper_4K.webp')] bg-fixed bg-cover"></background>
+    <header class="from-blue-700 bg-gradient-to-b">
+        <div class="drop-shadow-[0_5px_0px_rgba(0,0,0,1)] font-cartoon text-5xl sm:text-7xl lg:text-9xl font-semibold flex flex-col items-center">
+            <div class="flex">
+                <h1 class="text-rick_blue"><a target="_blank" rel="external nofollow noopener" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">Rick</a></h1>
+                <h1 class="mx-7 text-portal_green">and</h1>
+                <h1 class="text-morty_yellow">Morty</h1>
+            </div>
+            <h1 class="text-beth_red">Randomizer</h1>
+        </div>
+
+        
+        
+        <!-- <p>Short-ish description of what the app does</p> -->
+        <description class="text-gray-200 flex flex-col items-start w-fit mx-14 lg:w-2/3 lg:mx-auto m-12 text-2xl lg:text-xl p-8 bg-gray-800 rounded-xl border-[6px] border-gray-200 gap-6">
+            <span>Welcome !</span>
+            <p>Rick and Morty is an American animated science fiction sitcom created by <a target="_blank" rel="external nofollow noopener" class="underline" href="https://www.google.com/search?q=Justin+Roiland">Justin Roiland</a> and <a target="_blank" rel="external nofollow noopener" class="underline" href="https://www.google.com/search?q=Dan+Harmon">Dan Harmon</a>. The series follows Rick Sanchez, an alcoholic, nihilistic super-scientist, and his easily distressed grandson, Morty Smith to parallel dimensions and exotic planets with extraterrestrials. These adventures commonly cause trouble for Morty's family—Jerry, Beth, and Summer—who are often dragged along as well.</p>
+            <p>On this website you can learn about the characters in a fun way by pressing any of the four buttons below to request 12 randomly picked characters with the requested status (Alive, Dead, Unknown, or All)</p>
+            <span>You can also click on a card to get more info on the character.</span>
+            <span>Go ahead, try it out !</span>
+        </description>
+        <nav class="flex flex-col lg:flex-row justify-center text-5xl font-cartoon h-fit lg:h-16 mx-14 gap-12 mb-8">
+            <div class="flex flex-col md:flex-row  h-fit lg:h-16 gap-12 w-full">
+            <button id="btnAlive"   class="rounded w-full h-32 lg:h-16 bg-portal_green">Alive</button>
+            <button id="btnDead"    class="rounded w-full h-32 lg:h-16 bg-beth_red">Dead</button>
+            </div>
+            <div class="flex flex-col md:flex-row  h-fit lg:h-16 gap-12 w-full">
+            <button id="btnUnknown" class="rounded w-full h-32 lg:h-16 bg-morty_yellow">Unknown</button>
+            <button id="btnAll"     class="rounded w-full h-32 lg:h-16 bg-summer_pink">All</button>
+            </div>
+        </nav>
+        
+    </header>
+    <main>
+        <!-- Cards Wrapper -->
+        <div id="cardsWrapper" class="px-14 w-full mx-auto p-16 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 min-[1680px]:grid-cols-4 gap-12 text-white">
+            <!--Cards will be placed here -->
+        </div>
+        
+        <!-- this is a scroll Up button that appears for mobile and very small screens -->
+        <img id="btnGoUp" class ="lg:hidden mx-auto mt-8 w-44 h-44 cursor-pointer" src="/public/ressources/img/Butter And Gravity Field Up.webp" alt="">
+    </main>
+    <footer class="mt-10 text-xl text-gray-200 bg-gray-900 border-t-2 border-gray-500">
+        <div class="flex justify-between items-center my-4 mx-8">
+            <ul>
+                <li>Characters : 826</li>
+                <li>Locations : 126</li>
+                <li>Episodes : 51</li>
+            </ul>
+            <span class="w-1/3 text-right">Thanks to the people who made <a target="_blank" rel="external nofollow noopener" class="underline" href="https://rickandmortyapi.com/">The Rick And Morty Api</a> without whom not of this would have been possible.</span>
+        </div>  
+        <div class="flex justify-center border-t-[1px] py-2 border-gray-500">
+            <!-- removing aria-disabled and replacing it with a valid href could redirect to separate "license.html" and "privacy.html" pages -->
+            <a class="cursor-pointer" rel="license" target="_blank" role="link" aria-disabled="true">Copyright © 2024</a>
+            <span class="mx-2">-</span>
+            <a class="cursor-pointer" rel="privacy-policy" target="_blank" role="link" aria-disabled="true">Privacy Policy</a></div>
+            
+    </footer>
+
+</body>
+</html>
+
+
+
+
+
+
