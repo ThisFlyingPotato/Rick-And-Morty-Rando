@@ -127,7 +127,6 @@ class Character{
      */
     static async initialize(status,page,index){
         let url= status==="all" ? `https://rickandmortyapi.com/api/character/?page=${page}` : `https://rickandmortyapi.com/api/character/?status=${status}&page=${page}`
-        // let url= `https://rickandmortyapi.com/api/character/?species=Mythological`
 
         let redoStatement=false
         let maxRetry=50
@@ -136,7 +135,7 @@ class Character{
         do{
             try {
                 response = await fetch(url)
-                if(!response.ok){throw new Error("Response for an Episode fetch wasn't OK. Retrying (forever, and ever) until it works.")}
+                if(!response.ok){throw new Error("Response for an Character fetch wasn't OK. Retrying (forever, and ever) until it works.")}
                 data = await response.json()
             } catch (error) {
                 console.error(error)
@@ -190,13 +189,14 @@ class Character{
 
 
 /**
- * @generator Generate randomply picked {page,index} pairs
+ * @generator Generate randomly picked {page,index} pairs
  * @param {string} status status of the requested characters (dead, alive, unknown, or all)
  * @param {int} charactersRequested will generate this number of "Locations" from which to fetch Characters data
  * @param {array of {key,value}} notAllowed when randomly picking a page and index, if the {key,value} is present in this array, it will pick another one. Store every {key,value} and is primordial in dupplicate avoidance.
  * @returns {array of {key,value}} a set of unique {key,value}, quantity is determined by `characterRequested`
  */
 function randomPageIndexGenerator(status,charactersRequested,notAllowed){
+    
     pagesWithTheirIndexes=[]
     let needAnotherValue
     let elementsPerPage = 20
@@ -215,7 +215,7 @@ function randomPageIndexGenerator(status,charactersRequested,notAllowed){
 
         let rand = randomNumberGenerator(minNumber,maxNumber)
         let page = Math.ceil(rand / elementsPerPage)
-        let index = (rand + (elementsPerPage - 1)) %elementsPerPage
+        let index = (rand + (elementsPerPage - 1)) % elementsPerPage
         
         needAnotherValue=false
         notAllowed.forEach(element => {
@@ -246,26 +246,26 @@ function randomNumberGenerator(minNumber,maxNumber){
 
 
 /**
- * This recursive function request the specified number of characters then return the Character objects in an array, making sure no dupplicate are present in the array before returning it.
- * @param {string} status 
+ * This recursive function request the specified number of characters then returns the Character objects in an array, making sure no dupplicate are present in the array before returning it.
+ * @param {string} status
  * @param {int} charactersRequested 
- * @param {array of {key,value}} notAllowedPageIndexPair will not attempt to generate a new Character from those values : it is filled with value that made 1) already generated Characters, 2) generated Character that turned out to be dupplicates and never got added to the noDupplicateHere array.
+ * @param {array of {key,value}} notAllowedPageIndexPairs will not attempt to generate a new Character from those values : it is filled with value that made 1) already generated Characters, 2) generated Character that turned out to be dupplicates and never got added to the noDupplicateHere array.
  * @param {array of Character objects} noDuplicateHere you'd have to be absolutely unique to make it there.
  * @returns {array of Character objects} returns noDupplicateHere
  */
-async function requestCharacters(status,charactersRequested,notAllowedPageIndexPair=[],noDuplicateHere=[]){
+async function requestCharacters(status,charactersRequested,notAllowedPageIndexPairs=[],noDuplicateHere=[]){
+
     let characters=[]
-    let currentPageIndexPair=randomPageIndexGenerator(status,charactersRequested-noDuplicateHere.length,notAllowedPageIndexPair)
-    
-    currentPageIndexPair.forEach(element => {
-        notAllowedPageIndexPair.push(element)
+    let currentPageIndexPairs=randomPageIndexGenerator(status,charactersRequested-noDuplicateHere.length,notAllowedPageIndexPairs)
+    currentPageIndexPairs.forEach(element => {
         characters.push(Character.initialize(status,element['page'],element['index']))
     });
     characters = await Promise.all(characters)
 
     noDuplicateHere = ensureNoDuplicate(characters,noDuplicateHere)
-    if(noDuplicateHere.length<charactersRequested){
-        noDuplicateHere = requestCharacters(status,charactersRequested,notAllowedPageIndexPair,noDuplicateHere)
+    if(noDuplicateHere.length<charactersRequested && notAllowedPageIndexPairs.length!=charactersRequested){
+        console.log("need " + (charactersRequested-noDuplicateHere.length) +" more characters")
+        noDuplicateHere = requestCharacters(status,charactersRequested,notAllowedPageIndexPairs,noDuplicateHere)
     }
     return noDuplicateHere
 }
@@ -419,8 +419,7 @@ async function buildAllCards(status,charactersRequested){
  */
 function attachCardEventListener(character,cardContainer){
     cardContainer.addEventListener("click",async()=>{
-        // await buildModal(character)
-        buildModal(character)
+        await buildModal(character)
         openModal()
     })
     return
@@ -595,13 +594,13 @@ function attachEventListenerOnScrollUpPicture(){
  * @async
  * @returns {void}
  */
-async function main(){  
+
+async function main(){
     attachEventListenerOnStatusButtons()
     attachEventListenerOnScrollUpPicture()
     buildAllCards("all",12)
 
     return
 }
-
 
 main()
