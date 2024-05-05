@@ -12,9 +12,13 @@
  * -closeModal()
  * -attachEventListenerOnStatusButtons()
  * -attachEventListenerOnScrollUpPicture()
+ * -getApiStats()
+ * -fetchData()
  * -main()
  */
 
+
+const apiStats={};
 
 
 /**
@@ -51,21 +55,7 @@ class Episode{
      * @returns {new Episode} instantiate a new Episode with already fetched and ready to use data
      */
     static async initialize(url){
-        let redoStatement=false
-        let maxRetry=50
-        let response
-        let data
-        do{
-            try {
-                response = await fetch(url)
-                if(!response.ok){throw new Error("Response for an Episode fetch wasn't OK. Retrying (forever, and ever) until it works.")}
-                data = await response.json()
-            } catch (error) {
-                console.error(error)
-                redoStatement=true
-                maxRetry--
-            }
-        }while(redoStatement || !maxRetry)
+        let data = await fetchData(url)
         return new Episode(data)
     }
     getFullName(){
@@ -127,23 +117,7 @@ class Character{
      */
     static async initialize(status,page,index){
         let url= status==="all" ? `https://rickandmortyapi.com/api/character/?page=${page}` : `https://rickandmortyapi.com/api/character/?status=${status}&page=${page}`
-
-        let redoStatement=false
-        let maxRetry=50
-        let response
-        let data
-        do{
-            try {
-                response = await fetch(url)
-                if(!response.ok){throw new Error("Response for an Character fetch wasn't OK. Retrying (forever, and ever) until it works.")}
-                data = await response.json()
-            } catch (error) {
-                console.error(error)
-                redoStatement=true
-                maxRetry--
-            }
-        }while(redoStatement || !maxRetry)
-        
+        let data = await fetchData(url)
         return new Character(data,index)
     }
 
@@ -192,30 +166,20 @@ class Character{
  * @generator Generate randomly picked {page,index} pairs
  * @param {string} status status of the requested characters (dead, alive, unknown, or all)
  * @param {int} charactersRequested will generate this number of "Locations" from which to fetch Characters data
- * @param {array of {key,value}} notAllowed when randomly picking a page and index, if the {key,value} is present in this array, it will pick another one. Store every {key,value} and is primordial in dupplicate avoidance.
+ * @param {pointer of {array of {key,value}}} notAllowed when randomly picking a page and index, if the {key,value} is present in this array, it will pick another one. Store every {key,value} and is primordial in dupplicate avoidance.
  * @returns {array of {key,value}} a set of unique {key,value}, quantity is determined by `characterRequested`
  */
 function randomPageIndexGenerator(status,charactersRequested,notAllowed){
     
     pagesWithTheirIndexes=[]
     let needAnotherValue
-    let elementsPerPage = 20
     let minNumber=1
-    let maxNumber
-    switch (status){
-        case 'dead':    maxNumber=287;  break
-        case 'alive':   maxNumber=439;  break
-        case 'unknown': maxNumber=100;  break
-        case 'all':     maxNumber=826;  break
-        default:throw new Error("Default has been reached on randomPageIndexGenerator(), please use a valid status.");
-    }
-
-    
+    let maxNumber=apiStats[status]
     while(pagesWithTheirIndexes.length<charactersRequested){
 
         let rand = randomNumberGenerator(minNumber,maxNumber)
-        let page = Math.ceil(rand / elementsPerPage)
-        let index = (rand + (elementsPerPage - 1)) % elementsPerPage
+        let page = Math.ceil(rand / apiStats['elementsPerPage'])
+        let index = (rand + (apiStats['elementsPerPage'] - 1)) % apiStats['elementsPerPage']
         
         needAnotherValue=false
         notAllowed.forEach(element => {
@@ -249,7 +213,7 @@ function randomNumberGenerator(minNumber,maxNumber){
  * This recursive function request the specified number of characters then returns the Character objects in an array, making sure no dupplicate are present in the array before returning it.
  * @param {string} status
  * @param {int} charactersRequested 
- * @param {array of {key,value}} notAllowedPageIndexPairs will not attempt to generate a new Character from those values : it is filled with value that made 1) already generated Characters, 2) generated Character that turned out to be dupplicates and never got added to the noDupplicateHere array.
+ * @param {array of {key,value} at first, then pointer of that array}  notAllowedPageIndexPairs will not attempt to generate a new Character from those values : it is filled with value that made 1) already generated Characters, 2) generated Character that turned out to be dupplicates and never got added to the noDupplicateHere array.
  * @param {array of Character objects} noDuplicateHere you'd have to be absolutely unique to make it there.
  * @returns {array of Character objects} returns noDupplicateHere
  */
@@ -328,7 +292,7 @@ function ensureNoDuplicate(characters,noDuplicateHere){
  */
 function buildCard(character){
 
-    //generating card elements
+    //generating card elements (This is the future structure in the DOM)
     let cardContainer=document.createElement("div")
         let imgContainer=document.createElement("img")
         let textContainer=document.createElement("div")
@@ -404,6 +368,8 @@ function buildCard(character){
  */
 async function buildAllCards(status,charactersRequested){
 
+    charactersRequested=Math.min(charactersRequested,apiStats[status])
+
     let characters=await requestCharacters(status,charactersRequested)
     document.querySelector("#cardsWrapper").innerHTML=''
     characters.forEach(character => {buildCard(character)});
@@ -434,7 +400,7 @@ async function buildModal(character){
     let episodeListText=await character.getEpisodeFullNames()
     let episodeListElements=[]
     
-    //generate elements (this is the future structure)
+    //generate elements (this is the future structure in the DOM)
     let modalWrapper                        =document.createElement("div")
     let     modalContainer                  =document.createElement("div")
     let         textName                    =document.createElement("h2")
@@ -595,11 +561,67 @@ function attachEventListenerOnScrollUpPicture(){
  * @returns {void}
  */
 
+/**
+ * Performs a serie of fetches to get stats on "how many characters are dead/alive/unknown/total ?" and get the number of elements per page.
+ * Sets the global associative array apiStats with the appropriate stats, enabling other functions to get easy access to up to date stats.
+ * 
+ * @returns {void}
+ */
+async function getApiStats(){
+    let baseURL="https://rickandmortyapi.com/api/character/"
+    let statusQueries=["?status=Alive","?status=Dead","?status=unknown"]
+    let data
+    for (let index = 0; index < statusQueries.length; index++) {
+        const statusQuery = statusQueries[index];
+        data = await fetchData((baseURL+statusQuery))
+
+        switch(index){
+            case 0:apiStats['alive']=data['info']['count'];break
+            case 1:apiStats['dead']=data['info']['count'];break
+            case 2:apiStats['unknown']=data['info']['count'];break
+            default:throw new Error("Reached default case during stats fetch")
+        }
+        if(index===2){
+            apiStats['all']=apiStats['alive']+apiStats['dead']+apiStats['unknown']
+            apiStats['elementsPerPage']=data['results'].length
+            return
+        }
+
+    }
+}
+
+
+/**
+ * Fetches data from an url, trying again up to MaxRetry on fail.
+ * @param {*} url of the fetch
+ * @returns data of a fetch (already resolved)
+ */
+async function fetchData(url){
+    let redoStatement=false
+    let maxRetry=50
+    let response
+    let data
+
+    do{
+        try {
+            response = await fetch(url)
+            if(!response.ok){throw new Error("Response wasn't OK. Retrying.")}
+            data = await response.json()
+        } catch (error) {
+            console.error(error)
+            redoStatement=true
+            maxRetry--
+        }
+    }while(redoStatement || !maxRetry)
+    return data
+}
+
 async function main(){
+
     attachEventListenerOnStatusButtons()
     attachEventListenerOnScrollUpPicture()
-    buildAllCards("all",12)
-
+    await getApiStats()
+    buildAllCards('all',12)
     return
 }
 
